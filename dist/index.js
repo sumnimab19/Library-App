@@ -1,1 +1,36 @@
-function getBooks(){const a=$(".input").val();$.ajax({url:"https://www.googleapis.com/books/v1/volumes?q=intitle:"+a+"&key="+"AIzaSyA6IRz2PfBZ2HyZlTjr0QD9_nZqZctgFKg",method:"GET"}).then(a=>{let b="",c="",d="",e="";for(let f=0;f<a.items.length;f++){const g=$("<div></div>");g.addClass("eachBook"),b=$("<p class = 'title'>"+a.items[f].volumeInfo.title+"</p>"),d=$("<img class = 'image'><br><a href"+a.items[f].volumeInfo.infoLink+"><button id = 'imgButton' class = 'btnWantRead btn btn-warning'> Want to Read? </button></a>"),c=$("<p class = 'author'>"+a.items[f].volumeInfo.authors+"</p>"),e=a.items[f].volumeInfo.imageLinks.thumbnail,d.attr("src",e),g.append(b,c,d),g.appendTo($(".bookList"))}})}$(".searchButton").on("click",a=>{a.preventDefault(),getBooks()}),getBookList(),getReadBookList(),$(document).on("click",".btnWantRead",a=>{a.preventDefault();const b=a.target.parentNode.parentNode,c=b.children[0].textContent,d=b.children[1].textContent,e=b.children[2].src,f=$(".member-id"),g={title:c,author:d,url:e,UserId:f.text(),read:!1};$.ajax("/api/members",{type:"POST",data:g}).then(()=>{location.reload()}),getBookList()});function createBookDiv(a){const b=$("<div></div>");b.data(a);const c=$("<p>"+a.title+"</p>");b.append(c),c.addClass("title");const d=$("<p>"+a.author+"</p>");b.append(d),d.addClass("author");const e=$("<img src='"+a.url+"'/><br><button id = 'imgButton' class = 'btnFinished btn btn-warning'> Finished? </button></a>");return b.append(e),b}$(document).on("click",".btnFinished",function(){const a=$(this).parent().data();a.read=!0,console.log(a),$.ajax("/api/members",{type:"PUT",data:a}).then(()=>{location.reload()}),location.reload(),getReadBookList()});function getBookList(){$.get("/api/members",a=>{console.log(a);const b=[];for(let c=0;c<a.length;c++)console.log($(".member-id").text()),!1==a[c].read&&a[c].UserId==$(".member-id").text()&&b.push(createBookDiv(a[c]));renderBookList(b)})}function renderBookList(a){const b=$(".bookSelected");a.length&&b.append(a)}function createReadBookDiv(a){const b=$("<div></div>");b.addClass("readBooks"),b.data(a);const c=$("<p>"+a.title+"</p>");b.append(c),c.addClass("title");const d=$("<p>"+a.author+"</p>");b.append(d),d.addClass("author");const e=$("<img src='"+a.url+"'/>");return b.append(e),b}function getReadBookList(){$.get("/api/readbook",a=>{console.log(a);const b=[];for(let c=0;c<a.length;c++)!0==a[c].read&&a[c].UserId==$(".member-id").text()&&b.push(createReadBookDiv(a[c]));renderReadBook(b)})}function renderReadBook(a){const b=$(".readBookList");a.length&&b.append(a)}
+'use strict';
+
+var fs        = require('fs');
+var path      = require('path');
+var Sequelize = require('sequelize');
+var basename  = path.basename(module.filename);
+var env       = process.env.NODE_ENV || 'development';
+var config    = require(__dirname + '/../config/config.json')[env];
+var db        = {};
+
+if (config.use_env_variable) {
+  var sequelize = new Sequelize(process.env[config.use_env_variable]);
+} else {
+  var sequelize = new Sequelize(config.database, config.username, config.password, config);
+}
+
+fs
+  .readdirSync(__dirname)
+  .filter(function(file) {
+    return (file.indexOf('.') !== 0) && (file !== basename) && (file.slice(-3) === '.js');
+  })
+  .forEach(function(file) {
+    var model = sequelize['import'](path.join(__dirname, file));
+    db[model.name] = model;
+  });
+
+Object.keys(db).forEach(function(modelName) {
+  if (db[modelName].associate) {
+    db[modelName].associate(db);
+  }
+});
+
+db.sequelize = sequelize;
+db.Sequelize = Sequelize;
+
+module.exports = db;
