@@ -135,7 +135,8 @@ function getBookList() {
 
       // ######### REVIEW THIS WITH THE TEAM ###############
       // if (data[i].read == false && data[i].UserId == $(".member-id").text()) {
-         if((data[i].read == false) && (data[i].UserId == 1)) {
+         if((data[i].read == false) ) {
+          // if((data[i].read == false) && (data[i].UserId == 1)) {
 
         rowsToAdd.push(createBookDiv(data[i]));
       }
@@ -181,7 +182,8 @@ function getReadBookList() {
 
     for (let i = 0; i < data.length; i++) {
       // if (data[i].read == true && data[i].UserId == $(".member-id").text()) {
-        if((data[i].read == true) && (data[i].UserId == 1)) {
+        if((data[i].read == true)) {
+          // if((data[i].read == true) && (data[i].UserId == 1)) {
         rowsToAdd.push(createReadBookDiv(data[i]));
       }
     }
