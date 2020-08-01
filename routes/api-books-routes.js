@@ -1,7 +1,6 @@
 const { Op } = require("sequelize");
-
 const db = require("../models");
-
+const isAuthenticated = require('../config/middleware/isAuthenticated');
 module.exports = function(app) {
   app.post("/api/members", (req, res) => {
     // Create an Book
@@ -16,13 +15,17 @@ module.exports = function(app) {
       res.json(dbBook);
     });
   });
-
-  app.get("/api/members", (req, res) => {
-    db.Books.findAll({}).then(dbBook => {
+  app.get("/api/members", isAuthenticated, (req, res) => {
+    console.log(req.user);
+    const userId = req.user.id;
+    db.Books.findAll({
+      where: {
+        UserId: userId
+      }
+    }).then(dbBook => {
       res.json(dbBook);
     });
   });
-
   app.put("/api/members", (req, res) => {
     db.Books.update(req.body, {
       where: {
@@ -30,15 +33,13 @@ module.exports = function(app) {
       }
     });
   });
-
   // 7-19-20
-  app.get("/api/readbook", (req, res) => {
+  app.get("/api/readbook", isAuthenticated, (req, res) => {
+    const userId = req.user.id;
     db.Books.findAll({
       where: {
-        read: {
-          [Op.eq]: true
-        }
-        
+        read: true,
+        UserId: userId
       }
     }).then(dbBook => {
       res.json(dbBook);
